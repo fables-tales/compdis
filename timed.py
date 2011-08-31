@@ -5,7 +5,9 @@ import threading
 r = redis.Redis(host='localhost', port=6379, db=0)
 started = False
 start_time = None
-offset = float(r.get("org.srobo.time.offset"))
+offset = r.get("org.srobo.time.offset")
+if offset is not None:
+  offset = float(offset)
 paused = False
 quit = False
 
