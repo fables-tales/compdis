@@ -37,6 +37,13 @@ def interaction_thread():
         print r.get("org.srobo.time")
         print r.get("org.srobo.time.offset")
         print r.get("org.srobo.time.start")
+      elif x.lower() == "help":
+        print "this is timed"
+        print "the commands are"
+        print "- start: start the timed clock, requires org.srobo.time.start to exist"
+        print "- pause: pause the timed clock"
+        print "- resume: resume the timed clock"
+        print "- quit: quit timed"
   except:
     quit = True
     
