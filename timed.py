@@ -14,7 +14,7 @@ quit = False
 def interaction_thread():
   global quit
   global started
-  global start_timoe
+  global start_time
   global offset
   global paused
   global r
