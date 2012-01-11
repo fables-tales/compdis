@@ -21,5 +21,7 @@ def match_from_ms(ms):
     return match_dict
 
 if __name__ == "__main__":
+    time = r.get("org.srobo.time")
+    print time
     print get_next_match()
-    
+    print get_current_match()
