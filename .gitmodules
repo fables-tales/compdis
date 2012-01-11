@@ -1,0 +1,3 @@
+[submodule "redis-web"]
+	path = redis-web
+	url = https://github.com/tnm/redweb.git
