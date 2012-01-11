@@ -12,5 +12,5 @@ if __name__ == "__main__":
         resp = ps.parse_response()
         parts = resp.split(" ")
         if len(parts) >= 4 and (parts[1] in write_messages):
-            r.publish(parts[2], "")
+            r.publish(parts[2].replace("\"",""), "")
             print "publishing:", parts[2]
