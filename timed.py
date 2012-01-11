@@ -60,7 +60,13 @@ def start_competition():
     global offset
     time_thread = threading.Thread(target=clock_thread)
     if r.get("org.srobo.time.offset") == None:
+        
         start_time = r.get("org.srobo.time.start")
+        if start_time == None:
+            print "the start time for the competiton has not been set" 
+            print "to set it, create a key in redis \"org.srobo.time.start\""
+            print "with a value equal to the unix time of the start of the competition"
+            exit() 
         offset = float(start_time)
     time_thread.start()
 
