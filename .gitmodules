@@ -1,3 +1,6 @@
 [submodule "redis-web"]
 	path = redis-web
 	url = https://github.com/tnm/redweb.git
+[submodule "webdis"]
+	path = webdis
+	url = git://github.com/nicolasff/webdis.git
