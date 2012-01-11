@@ -16,7 +16,8 @@ def get_current_match():
 def match_from_ms(ms):
     match = ms.split(",")
     match_dict = {"time": float(match[0]),
-                  "teams": [ int(x) for x in match[1:]]}
+                  "teams": [ int(x) for x in match[1:-1]]}
+    match_dict["number"] = match[-1]
     return match_dict
 
 if __name__ == "__main__":
