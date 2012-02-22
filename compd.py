@@ -5,6 +5,12 @@ import socket
 HOST = "localhost"
 PORT = 6379
 
+def pub_all():
+	s.sendall('PUBLISH cheese 0')
+
+def move():
+	print('Moving')
+
 red_mod_coms = ['APPEND',
 		'BLPOP',
 		'BRPOP',
@@ -54,13 +60,13 @@ red_mod_coms = ['APPEND',
 		'ZREMRANGEBYSCORE',
 		'ZUNIONSTORE'	]
 
-red_spec[	'MOVE',
-		'RENAME',
-		'RENAMENX',
-		'SELECT',
-		'SHUTDOWN',
-		'SLAVEOF',
-		'SMOVE'		]
+red_spec[	'MOVE':move(),
+		'RENAME':move(),
+		'RENAMENX':move(),
+		'SELECT':pub_all(),
+		'SHUTDOWN':quit(),
+		'SLAVEOF':pub_all(),
+		'SMOVE':move()	]
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((HOST,PORT))
@@ -71,3 +77,4 @@ while True:
 	print 'Rec:', repr(data)
 	if 'INCR' in repr(data):
 		s.sendall('PUBLISH cheese 2\r\n')
+
