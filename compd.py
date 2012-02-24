@@ -1,16 +1,14 @@
 #!/bin/env python
 
-import socket, re
+import socket, re, shlex
 
 HOST = "localhost"
 PORT = 6379
 
 def get_parts(data):
-    parts = re.compile('\+?(\d+\.\d+)\s+"([A-Z]+)"\s+"(.*)"')
-    matches = parts.match(data)
-    if matches is not None:
-        return matches.groups()
-    return None
+    lexer = shlex.shlex(data, posix=True)
+    lexer.whitespace_split = True
+    return tuple(lexer)
 
 def pub_all():
 	s.sendall('PUBLISH cheese 0')
@@ -86,8 +84,7 @@ while True:
 	print parts
 	if parts is None:
 		continue
-	timestamp,cmd,key = parts
-	print(cmd)
-	if cmd in red_mod_coms:
-		s.sendall('PUBLISH {0} 2\r\n'.format(key))
+	if parts[1].upper() in red_mod_coms:
+		for i in range(red_mod_coms)
+		s.sendall('PUBLISH {0} UPDATE\r\n'.format(parts[2]))
 
