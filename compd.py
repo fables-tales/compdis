@@ -11,7 +11,23 @@ def normal(cmd, args):
 	for i in range(cmd):
 		s.sendall('PUBLISH {0} UPDATE\r\n'.format(args[i]))
 
-def special(cmd, *args):
+def special_bpop(cmd, args):
+	print 'Special processing'
+	normal(len(args)-1,args)
+
+def special_flush(cmd, args):
+	pass
+
+def special_mset(cmd, args):
+	pass
+
+def special_select(cmd, args):
+	pass
+
+def special_shutdown(cmd, args):
+	pass
+
+def special_slave(cmd, args):
 	pass
 
 def get_parts(data):
@@ -26,14 +42,14 @@ def move():
 	print('Moving')
 
 red_mod_coms = {'APPEND':(1,normal),
-		'BLPOP':(-1,normal),
-		'BRPOP':(-1,normal),
+		'BLPOP':(-1,special_bpop),
+		'BRPOP':(-1,special_bpop),
 		'BRPOPLPUSH':(2,normal),
 		'DECR':(1,normal),
 		'DECRBY':(1,normal),
 		'DEL':(-1,normal),
-		'FLUSHALL':(0,special),
-		'FLUSHDB':(0,special),
+		'FLUSHALL':(0,special_flush),
+		'FLUSHDB':(0,special_flush),
 		'GETSET':(1,normal),
 		'HDEL':(1,normal),
 		'HINCRBY':(1,normal),
@@ -49,22 +65,26 @@ red_mod_coms = {'APPEND':(1,normal),
 		'LREM':(1,normal),
 		'LSET':(1,normal),
 		'LTRIM':(1,normal),
-		'MSET':(-1,special),
-		'MSETNX':(-1,special),
-		'RENAME':(2,special),
-		'RENAMENX':(2,special),
+		'MOVE':(2,normal),
+		'MSET':(-1,special_mset),
+		'MSETNX':(-1,special_mset),
+		'RENAME':(2,normal),
+		'RENAMENX':(2,normal),
 		'RPOP':(1,normal),
 		'RPOPLPUSH':(2,normal),
 		'RPUSH':(1,normal),
 		'RPUSHX':(1,normal),
 		'SADD':(1,normal),
 		'SDIFFSTORE':(1,normal),
+		'SELECT':(0,special_select),
 		'SET':(1,normal),
 		'SETBIT':(1,normal),
 		'SETEX':(1,normal),
 		'SETNX':(1,normal),
 		'SETRANGE':(1,normal),
+		'SHUTDOWN':(0,special_shutdown),
 		'SINTERSTORE':(1,normal),
+		'SLAVEOF':(0,special_slave),
 		'SMOVE':(2,normal),
 		'SORT':(1,normal),
 		'SPOP':(1,normal),
@@ -77,14 +97,6 @@ red_mod_coms = {'APPEND':(1,normal),
 		'ZREMRANGEBYRANK':(1,normal),
 		'ZREMRANGEBYSCORE':(1,normal),
 		'ZUNIONSTORE':(1,normal)	}
-
-red_spec[	'MOVE':move(),
-		'RENAME':move(),
-		'RENAMENX':move(),
-		'SELECT':pub_all(),
-		'SHUTDOWN':quit(),
-		'SLAVEOF':pub_all(),
-		'SMOVE':move()	]
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((HOST,PORT))
