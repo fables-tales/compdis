@@ -5,9 +5,7 @@ import threading
 r = redis.Redis(host='localhost', port=6379, db=0)
 started = False
 start_time = None
-offset = r.get("org.srobo.time.offset")
-if offset is not None:
-    offset = float(offset)
+pause_time = 0
 paused = False
 quit = False
 
@@ -15,7 +13,6 @@ def interaction_thread():
     global quit
     global started
     global start_time
-    global offset
     global paused
     global r
 
@@ -25,6 +22,7 @@ def interaction_thread():
         if x.lower() == "start":
             if started: print "already started the competition at:", start_time
             else:
+                started = True
                 start_competition()
         elif x.lower() == "pause":
             paused = True 
@@ -33,14 +31,14 @@ def interaction_thread():
         elif x.lower() == "quit":
             quit = True
         elif x.lower() == "get":
-            print r.get("org.srobo.time")
-            print r.get("org.srobo.time.offset")
+            print r.get("org.srobo.time.real")
+            print r.get("org.srobo.time.competition")
             print r.get("org.srobo.time.start")
         elif x.lower()[0:len("setstart")] == "setstart":
             #plus one because of the space
-            offset = int(x.lower()[len("setstart") + 1:].strip())
+            diff = int(x.lower()[len("setstart") + 1:].strip())
             now = time.time()
-            local_start_time = now + offset * 60
+            local_start_time = now + diff * 60
             r.set("org.srobo.time.start", local_start_time)
              
         elif x.lower() == "help":
@@ -57,27 +55,24 @@ time_thread = None
 def start_competition():
     global time_thread
     global start_time
-    global offset
     time_thread = threading.Thread(target=clock_thread)
-    if r.get("org.srobo.time.offset") == None:
-        
-        start_time = r.get("org.srobo.time.start")
-        if start_time == None:
-            print "the start time for the competiton has not been set" 
-            print "to set it, create a key in redis \"org.srobo.time.start\""
-            print "with a value equal to the unix time of the start of the competition"
-            exit() 
-        offset = float(start_time)
+    start_time = float(r.get("org.srobo.time.start"))
+    if start_time == None:
+        print "the start time for the competiton has not been set" 
+        print "to set it, create a key in redis \"org.srobo.time.start\""
+        print "with a value equal to the unix time of the start of the competition"
+        exit() 
     time_thread.start()
 
 def clock_thread():
-    global offset
+    global pause_time
+    global start_time
     last = time.time()
     while not quit:
-        r.set("org.srobo.time", time.time())
+        r.set("org.srobo.time.real", time.time())
         if paused:
-            offset += time.time() - last 
-        r.set("org.srobo.time.offset", offset)
+            pause_time += time.time() - last 
+        r.set("org.srobo.time.competition", time.time() - pause_time - start_time)
         last = time.time()
         time.sleep(1)
 
