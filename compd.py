@@ -1,9 +1,27 @@
 #!/bin/env python
 
-import socket, re, shlex
+import socket, re, shlex, operator
 
 HOST = "localhost"
 PORT = 6379
+
+def get_parts(data):
+    lexer = shlex.shlex(data, posix=True)
+    lexer.whitespace_split = True
+    return tuple(lexer)
+
+def pub_all():
+	print 'Publishing all'
+	s.sendall('KEYS *\r\n')
+	data = s.recv(1024)
+	parts = get_parts(data)
+	print parts
+	keys = ()
+	for i in range(len(parts)-3):
+		if not ('*' in parts[i] or '$' in parts[i] or parts[i] is 'KEYS'):
+			keys = (keys, parts[i])
+	print keys
+	normal(len(keys), keys)
 
 def normal(cmd, args):
 	if cmd is -1:
@@ -16,27 +34,22 @@ def special_bpop(cmd, args):
 	normal(len(args)-1,args)
 
 def special_flush(cmd, args):
+	pub_all()
 	pass
 
 def special_mset(cmd, args):
 	pass
 
 def special_select(cmd, args):
+	pub_all()
 	pass
 
 def special_shutdown(cmd, args):
 	pass
 
 def special_slave(cmd, args):
+	pub_all()
 	pass
-
-def get_parts(data):
-    lexer = shlex.shlex(data, posix=True)
-    lexer.whitespace_split = True
-    return tuple(lexer)
-
-def pub_all():
-	s.sendall('PUBLISH cheese 0')
 
 def move():
 	print('Moving')
