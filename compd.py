@@ -36,7 +36,11 @@ def special_flush(cmd, args):
 	pass
 
 def special_mset(cmd, args):
-	pass
+	keys = []
+	for i in range(len(args)):
+		if (i % 2) is 0:
+			keys.append(args[i])
+	normal(len(keys), keys)
 
 def special_select(cmd, args):
 	pub_all()
