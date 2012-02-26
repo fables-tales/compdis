@@ -47,9 +47,14 @@ def special_select(cmd, args):
 	pass
 
 def special_shutdown(cmd, args):
+	print 'ALERT: Redis shutdown!'
 	pass
 
 def special_slave(cmd, args):
+	if not (args[0].upper() == 'NO' and args[1].upper() == 'ONE'):
+		print 'WARNING: Redis slave set'
+	else:
+		print 'Server is master'
 	pub_all()
 	pass
 
