@@ -15,12 +15,10 @@ def pub_all():
 	s.sendall('KEYS *\r\n')
 	data = s.recv(1024)
 	parts = get_parts(data)
-	print parts
-	keys = ()
+	keys = []
 	for i in range(len(parts)-3):
 		if not ('*' in parts[i] or '$' in parts[i] or parts[i] is 'KEYS'):
-			keys = (keys, parts[i])
-	print keys
+			keys.append(parts[i])
 	normal(len(keys), keys)
 
 def normal(cmd, args):
