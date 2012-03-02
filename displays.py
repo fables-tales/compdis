@@ -1,6 +1,6 @@
 #!/bin/env python
 
-import socket, redis
+import socket, redis, threading, re
 
 HOST = "localhost"
 PORT = 6379
@@ -31,7 +31,17 @@ def new_screen(count):
 	actor.lpush('{0}.displays.screen{1}'.format(BASE,count),'state','team','score')
 	actor.set('{0}.displays.screen{1}.state', STATE_REG)
 
+def subscribe():
+	subscriber.psubscribe('{0}.displays.*'.format(BASE))
+	for msg in subscriber.listen():
+		#Decide what to do...
+		if (msg['channel'] == '{0}.displays.count'.format(BASE) and re.match('^[0-9]*$',msg['data'])):
+			new_screen(msg['data'])
+
 setup()
+
+sub_thread = threading.Thread(target=subscribe)
+sub_thread.start()
 
 while True:
 	pass
