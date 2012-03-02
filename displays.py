@@ -1,30 +1,28 @@
 #!/bin/env python
 
-import socket
+import socket, redis
 
 HOST = "localhost"
 PORT = 6379
+DB = 0
 
 BASE = 'org.srobo'
 
-subscriber = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-subscriber.connect((HOST,PORT))
-
-actor = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-actor.connect((HOST,PORT))
+actor = redis.Redis(host=HOST, port=PORT, db=DB)
+subscriber = actor.pubsub()
 
 def setup():
 	print 'Setting up'
-	actor.sendall('LPUSH {0} displays\r\n'.format(BASE))
-	actor.sendall('LPUSH {0}.displays count locations\r\n'.format(BASE))
-	actor.sendall('SET {0}.displays.count 0\r\n'.format(BASE))
-	actor.sendall('LPUSH {0}.displays.locations FL FR BL BR DR\r\n'.format(BASE))
-	subscriber.sendall('PSUBSCRIBE {0}.displays.*\r\n'.format(BASE))
+	actor.lpush('{0} displays'.format(BASE))
+	actor.lpush('{0}.displays count locations'.format(BASE))
+	actor.set('{0}.displays.count 0'.format(BASE))
+	actor.lpush('{0}.displays.locations FL FR BL BR DR'.format(BASE))
+	subscriber.psubscribe('{0}.displays.*'.format(BASE))
 	print 'Setup complete'
 
 def new_screen(count):
-	actor.sendall('LPUSH {0}.displays screen{1}\r\n'.format(BASE,count))
-	actor.sendall('LPUSH {0}.displays.screen{1} state team score\r\n'.format(BASE,count))
+	actor.lpush('{0}.displays screen{1}'.format(BASE,count))
+	actor.lpush('{0}.displays.screen{1} state team score'.format(BASE,count))
 
 setup()
 
