@@ -18,38 +18,45 @@ def interaction_thread():
 
     quit = False
     while not quit:
-        x = raw_input("timed> ");
-        if x.lower() == "start":
-            if started: print "already started the competition at:", start_time
-            else:
-                started = True
-                start_competition()
-        elif x.lower() == "pause":
-            paused = True 
-        elif x.lower() == "resume":
-            paused = False
-        elif x.lower() == "quit":
-            quit = True
-        elif x.lower() == "get":
-            print r.get("org.srobo.time.real")
-            print r.get("org.srobo.time.competition")
-            print r.get("org.srobo.time.start")
-        elif x.lower()[0:len("setstart")] == "setstart":
-            #plus one because of the space
-            diff = int(x.lower()[len("setstart") + 1:].strip())
-            now = time.time()
-            local_start_time = now + diff * 60
-            r.set("org.srobo.time.start", local_start_time)
-             
-        elif x.lower() == "help":
-            print "this is timed"
-            print "the commands are"
-            print "- start: start the timed clock, requires org.srobo.time.start to exist"
-            print "- pause: pause the timed clock"
-            print "- resume: resume the timed clock"
-            print "- quit: quit timed"
-            print "- setstart: sets the start time of the competition, offset in minutes"
-    
+        try:
+            x = raw_input("timed> ");
+            if x.lower() == "start":
+                if started: print "already started the competition at:", start_time
+                else:
+                    started = True
+                    start_competition()
+            elif x.lower() == "pause":
+                print "paused"
+                paused = True 
+                r.set("org.srobo.time.paused", True)
+            elif x.lower() == "resume":
+                paused = False
+                r.set("org.srobo.time.paused", False)
+            elif x.lower() == "quit":
+                quit = True
+            elif x.lower() == "get":
+                print "real time", r.get("org.srobo.time.real")
+                print "competition time", r.get("org.srobo.time.competition")
+                print "competition start time", r.get("org.srobo.time.start")
+                print "competition offset", r.get("org.srobo.time.offset")
+            elif x.lower()[0:len("setstart")] == "setstart":
+                #plus one because of the space
+                diff = int(x.lower()[len("setstart") + 1:].strip())
+                now = time.time()
+                local_start_time = now + diff * 60
+                r.set("org.srobo.time.start", local_start_time)
+                 
+            elif x.lower() == "help":
+                print "this is timed"
+                print "the commands are"
+                print "- start: start the timed clock, requires org.srobo.time.start to exist"
+                print "- pause: pause the timed clock"
+                print "- resume: resume the timed clock"
+                print "- quit: quit timed"
+                print "- setstart: sets the start time of the competition, offset in minutes"
+        except:
+            break
+        
 time_thread = None
 
 def start_competition():
@@ -67,12 +74,15 @@ def start_competition():
 def clock_thread():
     global pause_time
     global start_time
+    global quit
     last = time.time()
     while not quit:
         r.set("org.srobo.time.real", time.time())
+        paused = r.get("org.srobo.time.paused") == "True"
         if paused:
             pause_time += time.time() - last 
         r.set("org.srobo.time.competition", time.time() - pause_time - start_time)
+        r.set("org.srobo.time.offset", pause_time + start_time)
         last = time.time()
         time.sleep(1)
 
@@ -81,3 +91,4 @@ def main():
     interaction_thread()
 if __name__ == "__main__":
     main()
+    quit = True
