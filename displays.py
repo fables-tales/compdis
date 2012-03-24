@@ -32,7 +32,7 @@ def new_screen(count):
 		print 'ERROR: Screen{0} already exists'.format(count)
 		pass
 	scr = actor.sadd('{0}.displays.screen{1}'.format(BASE,count),'state','team','score')
-	actor.set('{0}.displays.screen{1}.state', STATE_REG)
+	actor.set('{0}.displays.screen{1}.state'.format(BASE,count), STATE_REG)
 
 def subscribe():
 	subscriber.psubscribe('{0}.displays.*'.format(BASE))
