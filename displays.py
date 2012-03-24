@@ -8,7 +8,7 @@ DB = 0
 
 BASE = 'org.srobo'
 
-STATE_REG = 'register'
+STATE_REG = 'Register'
 STATE_NOE = 'No Entry'
 STATE_LEA = 'League'
 STATE_MAT = 'Match'
