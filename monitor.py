@@ -123,7 +123,7 @@ s.connect((HOST,PORT))
 
 s.sendall('MONITOR\r\n')
 while True:
-	data = s.recv(1024)
+	data = s.recv(16384)
 	print 'Rec:', repr(data)
 	parts = get_parts(data)
 	print parts
