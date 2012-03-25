@@ -18,6 +18,16 @@ def get_parts(data):
 	lexer.whitespace_split = True
 	return tuple(lexer)
 
+def split_match(data):
+	a = data.split(',')
+	res = {'mtime':a[0],
+	       'teamz0':a[1],
+	       'teamz1':a[2],
+	       'teamz2':a[3],
+	       'teamz3':a[4],
+	       'matNo':a[5]}
+	return res
+
 while True:
 	str = raw_input("Score: ")
 	try:
