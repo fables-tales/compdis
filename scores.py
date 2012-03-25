@@ -6,6 +6,8 @@ HOST = "localhost"
 PORT = 6379
 DB = 0
 
+BASE = 'org.srobo'
+
 actor = redis.Redis(host=HOST, port=PORT, db=DB)
 
 print("Please enter match data (space separated) in the following order:")
@@ -25,6 +27,7 @@ while True:
 			continue
 		for i in range(len(p)):
 			int(p[i])
+		actor.hmset('{0}.scores.match.{1}.{2}'.format(BASE,p[0],p[1]),{'trobot':p[2],'tzone':p[3],'tbucket':p[4],'nbuckets':p[5]})
 		print(p)
 	except ValueError:
 		print("Sorry, incorrectly entered. Please try again")
