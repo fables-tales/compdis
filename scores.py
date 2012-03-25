@@ -28,6 +28,15 @@ def split_match(data):
 	       'matNo':a[5]}
 	return res
 
+def game_points(score):
+	total = 0
+	total += int(score[2])
+	total += 2*int(score[3])
+	total += 5*int(score[4])
+	if int(score[5]) > 1:
+		total *= int(score[5])
+	return total
+
 while True:
 	str = raw_input("Score: ")
 	try:
