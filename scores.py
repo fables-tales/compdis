@@ -66,6 +66,9 @@ def score():
 				continue
 			for i in range(len(p)):
 				int(p[i])
+			if actor.hexists('{0}.scores.match.{1}.{2}'.format(BASE,p[0],p[1]),'trobot') or actor.hexists('{0}.scores.match.{1}.{2}'.format(BASE,p[0],p[1]),'tzone') or actor.hexists('{0}.scores.match.{1}.{2}'.format(BASE,p[0],p[1]),'tbucket') or actor.hexists('{0}.scores.match.{1}.{2}'.format(BASE,p[0],p[1]),'nbuckets'):
+				print('Some details for this already exist, please check input or use modify mode')
+				continue
 			actor.hmset('{0}.scores.match.{1}.{2}'.format(BASE,p[0],p[1]),{'trobot':p[2],'tzone':p[3],'tbucket':p[4],'nbuckets':p[5]})
 			match = split_match(actor.lindex('{0}.matches'.format(BASE),int(p[0]) - 1))
 			actor.incr('{0}.scores.team.{1}'.format(BASE,match['teamz'+p[1]]),game_points(p))
