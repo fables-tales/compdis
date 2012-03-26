@@ -47,6 +47,8 @@ while True:
 		for i in range(len(p)):
 			int(p[i])
 		actor.hmset('{0}.scores.match.{1}.{2}'.format(BASE,p[0],p[1]),{'trobot':p[2],'tzone':p[3],'tbucket':p[4],'nbuckets':p[5]})
-		print(p)
+		match = split_match(actor.lindex('{0}.matches'.format(BASE),int(p[0]) - 1))
+		actor.incr('{0}.scores.team.{1}'.format(BASE,match['teamz'+p[1]]),game_points(p))
+		print('Game Score ({0}): {1}'.format(match['teamz'+p[1]],game_points(p)))
 	except ValueError:
 		print("Sorry, incorrectly entered. Please try again")
