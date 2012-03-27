@@ -66,6 +66,9 @@ def score():
 				continue
 			for i in range(len(p)):
 				int(p[i])
+			if not int(p[1]) in range(4):
+				print('Please enter a valid zone number (0-3)')
+				continue
 			if actor.hexists('{0}.scores.match.{1}.{2}'.format(BASE,p[0],p[1]),'trobot') or actor.hexists('{0}.scores.match.{1}.{2}'.format(BASE,p[0],p[1]),'tzone') or actor.hexists('{0}.scores.match.{1}.{2}'.format(BASE,p[0],p[1]),'tbucket') or actor.hexists('{0}.scores.match.{1}.{2}'.format(BASE,p[0],p[1]),'nbuckets'):
 				print('Some details for this already exist, please check input or use modify mode')
 				continue
@@ -106,8 +109,12 @@ def modify():
 			str = raw_input('Zone: ')
 			if str == '':
 				z = -1
+				continue
 			try:
 				z = int(str)
+				if not z in range(4):
+					print('Please enter a valid zone number (0-3)')
+					z = None
 			except ValueError:
 				print('Invalid zone number, please try again')
 		if z == -1:
