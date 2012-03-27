@@ -68,7 +68,6 @@ while True:
 		setup()
 	elif str == 'A' or str == 'Assign':
 		assign()
-		print_screens()
 	elif str == 'P' or str == 'Print':
 		print_screens()
 	elif str == 'H' or str == 'Help':
