@@ -88,7 +88,77 @@ def results():
 		match = actor.hgetall('{0}.scores.match.{1}')
 
 def modify():
-	print('Modifying')
+	print('Modify')
+	while True:
+		str = raw_input('Match: ')
+		if str == '':
+			return
+		try:
+			match = int(str)
+		except ValueError:
+			print('Invalid match number, please try again')
+		print_match(match)
+		z = None
+		trobot = None
+		tzone = None
+		tbucket = None
+		nbuckets = None
+		while z is None:
+			str = raw_input('Zone: ')
+			if str == '':
+				z = -1
+			try:
+				z = int(str)
+			except ValueError:
+				print('Invalid zone number, please try again')
+		if z == -1:
+			continue
+		zone = actor.hgetall('{0}.scores.match.{1}.{2}'.format(BASE,match,z))
+		if zone == {}:
+			print('Match data not stored for Match {0}, Zone {1}\nPlease use score mode to enter new scores'.format(match,z))
+			continue
+		print('Please enter new values, leave blank for unchanged')
+		while trobot is None:
+			str = raw_input('Robot: ')
+			if str == '':
+				trobot = zone['trobot']
+				continue
+			try:
+				trobot = int(str)
+			except ValueError:
+				print('Invalid number, please try again')
+		while tzone is None:
+			str = raw_input('Zone: ')
+			if str == '':
+				tzone = zone['tzone']
+				continue
+			try:
+				tzone = int(str)
+			except ValueError:
+				print('Invalid number, please try again')
+		while tbucket is None:
+			str = raw_input('Bucket: ')
+			if str == '':
+				tbucket = zone['tbucket']
+				continue
+			try:
+				tbucket = int(str)
+			except ValueError:
+				print('Invalid number, please try again')
+		while nbuckets is None:
+			str = raw_input('No. Buckets: ')
+			if str == '':
+				nbuckets = zone['nbuckets']
+				continue
+			try:
+				nbuckets = int(str)
+			except ValueError:
+				print('Invalid number, please try again')
+		actor.hmset('{0}.scores.match.{1}.{2}'.format(BASE,match,z),{'trobot':trobot,'tzone':tzone,'tbucket':tbucket,'nbuckets':nbuckets})
+		mat = split_match(actor.lindex('{0}.matches'.format(BASE), match - 1))
+		actor.decr('{0}.scores.team.{1}'.format(BASE,mat['teamz{0}'.format(z)]),game_points([match,z,zone['trobot'],zone['tzone'],zone['tbucket'],zone['nbuckets']]))
+		actor.incr('{0}.scores.team.{1}'.format(BASE,mat['teamz{0}'.format(z)]),game_points([match,z,trobot,tzone,tbucket,nbuckets]))
+		print_match(match)
 
 while True:
 	print("Possible commands: \n[S]core\n[M]odify\n[R]esults\n[Q]uit")
