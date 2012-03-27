@@ -56,8 +56,11 @@ def assign():
 					print('Invalid screen number, please try again')
 			val = actor.zadd('{0}.displays.screens'.format(BASE),types[i],score)
 
+def commands():
+	print('Possible commands: \n[S]etup\n[A]ssign\n[P]rint\n[H]elp\n[Q]uit')
+
+commands()
 while True:
-	print('Possible commands: \n[S]etup\n[A]ssign\n[P]rint\n[Q]uit')
 	str = raw_input('CMD: ')
 	str = str.capitalize()
 	if str == 'S' or str == 'Setup':
@@ -67,6 +70,8 @@ while True:
 		print_screens()
 	elif str == 'P' or str == 'Print':
 		print_screens()
+	elif str == 'H' or str == 'Help':
+		commands()
 	elif str == 'Q' or str == 'Quit':
 		quit()
 
