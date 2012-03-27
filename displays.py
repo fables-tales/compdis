@@ -54,6 +54,7 @@ def assign():
 					score = int(str)
 				except ValueError:
 					print('Invalid screen number, please try again')
+					continue
 			val = actor.zadd('{0}.displays.screens'.format(BASE),types[i],score)
 
 def commands():
