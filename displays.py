@@ -74,5 +74,6 @@ while True:
 		commands()
 	elif str == 'Q' or str == 'Quit':
 		quit()
-
+	else:
+		print('Erm... What? Type \'H\' for a list of commands I understand')
 
