@@ -36,12 +36,12 @@ def game_points(score):
 
 def print_match(match):
 	print('Match {0}'.format(match))
+	try:
+		mat = split_match(actor.lindex('{0}.matches'.format(BASE), match - 1))
+	except AttributeError:
+		print('There is no expected match {0}'.format(match))
+		return
 	for i in range(4):
-		try:
-			mat = split_match(actor.lindex('{0}.matches'.format(BASE), match - 1))
-		except AttributeError:
-			print('There is no expected match {0}'.format(match))
-			return
 		zone = actor.hgetall('{0}.scores.match.{1}.{2}'.format(BASE,match,i))
 		if zone == {}:
 			print('Match data not stored for Match {0}, Zone {1}'.format(match,i))
