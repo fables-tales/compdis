@@ -85,7 +85,6 @@ def results():
 			print_match(int(str))
 		except ValueError:
 			print("Invalid match number, please try again")
-		match = actor.hgetall('{0}.scores.match.{1}')
 
 def modify():
 	print('Modify')
