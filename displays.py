@@ -38,8 +38,6 @@ def print_screens():
 		print('{0}:\t{1}'.format(scr[i][0],str))
 	raw_input()
 
-setup()
-
 def assign():
 	for i in range(len(types)):
 		val = None
@@ -59,6 +57,17 @@ def assign():
 			val = actor.zadd('{0}.displays.screens'.format(BASE),types[i],score)
 
 while True:
-	pass
+	print('Possible commands: \n[S]etup\n[A]ssign\n[P]rint\n[Q]uit')
+	str = raw_input('CMD: ')
+	str = str.capitalize()
+	if str == 'S' or str == 'Setup':
+		setup()
+	elif str == 'A' or str == 'Assign':
+		assign()
+		print_screens()
+	elif str == 'P' or str == 'Print':
+		print_screens()
+	elif str == 'Q' or str == 'Quit':
+		quit()
 
 
