@@ -40,6 +40,23 @@ def print_screens():
 
 setup()
 
+def assign():
+	for i in range(len(types)):
+		val = None
+		while val is None:
+			score = None
+			str = raw_input('{0}: '.format(types[i]))
+			if str == '':
+				score = actor.zscore('{0}.displays.screens'.format(BASE),types[i])
+				if score == None:
+					print('No previous, please either give a value or run setup')
+					continue
+			else:
+				try:
+					score = int(str)
+				except ValueError:
+					print('Invalid screen number, please try again')
+			val = actor.zadd('{0}.displays.screens'.format(BASE),types[i],score)
 
 while True:
 	pass
