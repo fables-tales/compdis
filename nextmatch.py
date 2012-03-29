@@ -1,6 +1,6 @@
 import redis
 
-match_length = 180
+match_length = 60*7 
 
 r = redis.Redis(host='localhost', port=6379, db=0)
 
