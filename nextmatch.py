@@ -11,7 +11,7 @@ def get_next_match():
     for i in xrange(0, len):
         v = r.lindex("org.srobo.matches", i)
         match = match_from_ms(v)
-        if match["time"] > comptime+match_length:
+        if match["time"] > comptime and match["time"] < comptime + match_length:
             return match
 
     return match_from_ms(r.lindex("org.srobo.matches", index))
