@@ -15,12 +15,19 @@ def pub_all():
 	s.sendall('KEYS *\r\n')
 	data = s.recv(1024)
 	parts = get_parts(data)
+<<<<<<< HEAD
 	print parts
 	keys = ()
 	for i in range(len(parts)-3):
 		if not ('*' in parts[i] or '$' in parts[i] or parts[i] is 'KEYS'):
 			keys = (keys, parts[i])
 	print keys
+=======
+	keys = []
+	for i in range(len(parts)-3):
+		if not ('*' in parts[i] or '$' in parts[i] or parts[i] is 'KEYS'):
+			keys.append(parts[i])
+>>>>>>> e2d0dc6e5888aee894d79445940f7be79763a684
 	normal(len(keys), keys)
 
 def normal(cmd, args):
@@ -38,16 +45,25 @@ def special_flush(cmd, args):
 	pass
 
 def special_mset(cmd, args):
-	pass
+	keys = []
+	for i in range(len(args)):
+		if (i % 2) is 0:
+			keys.append(args[i])
+	normal(len(keys), keys)
 
 def special_select(cmd, args):
 	pub_all()
 	pass
 
 def special_shutdown(cmd, args):
+	print 'ALERT: Redis shutdown!'
 	pass
 
 def special_slave(cmd, args):
+	if not (args[0].upper() == 'NO' and args[1].upper() == 'ONE'):
+		print 'WARNING: Redis slave set'
+	else:
+		print 'Server is master'
 	pub_all()
 	pass
 
@@ -116,7 +132,7 @@ s.connect((HOST,PORT))
 
 s.sendall('MONITOR\r\n')
 while True:
-	data = s.recv(1024)
+	data = s.recv(16384)
 	print 'Rec:', repr(data)
 	parts = get_parts(data)
 	print parts
