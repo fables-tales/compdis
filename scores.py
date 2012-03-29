@@ -166,8 +166,11 @@ def modify():
 		actor.incr('{0}.scores.team.{1}'.format(BASE,mat['teamz{0}'.format(z)]),game_points([match,z,trobot,tzone,tbucket,nbuckets]))
 		print_match(match)
 
+def commands():
+	print("Possible commands: \n[S]core\n[M]odify\n[R]esults\n[H]elp\n[Q]uit")
+
+commands()
 while True:
-	print("Possible commands: \n[S]core\n[M]odify\n[R]esults\n[Q]uit")
 	str = raw_input("CMD: ")
 	str = str.capitalize()
 	if str == 'S' or str == 'Score':
@@ -176,5 +179,9 @@ while True:
 		modify()
 	elif str == 'R' or str == 'Results':
 		results()
+	elif str == 'H' or str == 'Help':
+		commands()
 	elif str == 'Q' or str == 'Quit':
 		quit()
+	else:
+		print('Erm... What? Type \'H\' for a list of commands I understand')
