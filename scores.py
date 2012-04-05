@@ -114,7 +114,9 @@ def modify(mod):
 				print('Match data not stored for Match {0}, Zone {1}\nPlease use score mode to enter new scores'.format(match,z))
 				continue
 			print('Please enter new values, leave blank for unchanged')
+			match_rank(match,True)
 			zone_entry(mod,match,z,zone)
+			match_rank(match,False)
 		else:
 			zone = {'trobot':0,'tzone':0,'tbucket':0,'nbuckets':0}
 			print('Please enter new values, defaults to 0 if left blank')
@@ -124,6 +126,7 @@ def modify(mod):
 					continue
 				print('Zone {0}:'.format(z))
 				zone_entry(mod,match,z,zone)
+			match_rank(match,False)
 		print_match(match)
 		check_match(match)
 
@@ -157,6 +160,27 @@ def check_match(match):
 		print('WARNING! Too many tokens in this match! ({0})'.format(tokens))
 	if buckets > max_buckets:
 		print('WARNING! Too many buckets in this match! ({0})'.format(buckets))
+
+def match_rank(match,sub):
+	mat = split_match(actor.lindex('{0}.matches'.format(BASE), match - 1))
+	zpoints = dict()
+	for z in range(4):
+		zone = actor.hgetall('{0}.scores.match.{1}.{2}'.format(BASE,match,z))
+		if zone != {}:
+			zpoints['{0}'.format(z)] = game_points([match,z,zone['trobot'],zone['tzone'],zone['tbucket'],zone['nbuckets']])
+		else:
+			zpoints['{0}'.format(z)] = -1
+	zord = sorted(zpoints, key=zpoints.get, reverse=True)
+	scored = 4
+	for z in range(len(zord)):
+		print('Scoring = {0}'.format(scored))
+		if sub is True:
+			actor.decr('{0}.scores.team.{1}'.format(BASE,mat['teamz{0}'.format(zord[z])]),scored)
+		else:
+			actor.incr('{0}.scores.team.{1}'.format(BASE,mat['teamz{0}'.format(zord[z])]),scored)
+		if z != len(zord)-1:
+			if zpoints['{0}'.format(z)] != zpoints['{0}'.format(z+1)]:
+				scored = 4-z-1
 
 def commands():
 	print("Possible commands: \n[S]core\n[M]odify\n[R]esults\n[H]elp\n[Q]uit")
