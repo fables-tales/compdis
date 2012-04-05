@@ -136,10 +136,6 @@ def zone_entry(mod,match,z,zone):
 	tbucket = val_entry(mod,'\tBucket: ',zone['tbucket'])
 	nbuckets = val_entry(mod,'\tNo. Buckets: ',zone['nbuckets'])
 	actor.hmset('{0}.scores.match.{1}.{2}'.format(BASE,match,z),{'trobot':trobot,'tzone':tzone,'tbucket':tbucket,'nbuckets':nbuckets})
-	mat = split_match(actor.lindex('{0}.matches'.format(BASE), match - 1))
-	if mod is True:
-		actor.decr('{0}.scores.team.{1}'.format(BASE,mat['teamz{0}'.format(z)]),game_points([match,z,zone['trobot'],zone['tzone'],zone['tbucket'],zone['nbuckets']]))
-	actor.incr('{0}.scores.team.{1}'.format(BASE,mat['teamz{0}'.format(z)]),game_points([match,z,trobot,tzone,tbucket,nbuckets]))
 
 def check_match(match):
 	max_tokens = 20
