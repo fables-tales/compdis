@@ -59,6 +59,7 @@ def results():
 			return
 		try:
 			print_match(int(str))
+			check_match(int(str))
 		except ValueError:
 			print("Invalid match number, please try again")
 
@@ -124,6 +125,7 @@ def modify(mod):
 				print('Zone {0}:'.format(z))
 				zone_entry(mod,match,z,zone)
 		print_match(match)
+		check_match(match)
 
 def zone_entry(mod,match,z,zone):
 	trobot = val_entry(mod,'\tRobot: ',zone['trobot'])
@@ -135,6 +137,26 @@ def zone_entry(mod,match,z,zone):
 	if mod is True:
 		actor.decr('{0}.scores.team.{1}'.format(BASE,mat['teamz{0}'.format(z)]),game_points([match,z,zone['trobot'],zone['tzone'],zone['tbucket'],zone['nbuckets']]))
 	actor.incr('{0}.scores.team.{1}'.format(BASE,mat['teamz{0}'.format(z)]),game_points([match,z,trobot,tzone,tbucket,nbuckets]))
+
+def check_match(match):
+	max_tokens = 20
+	max_buckets = 4
+	tokens = 0
+	buckets = 0
+	for z in range(4):
+		zone = actor.hgetall('{0}.scores.match.{1}.{2}'.format(BASE,match,z))
+		if zone == {}:
+			continue
+		tokens += int(zone['trobot'])
+		tokens += int(zone['tzone'])
+		tokens += int(zone['tbucket'])
+		buckets += int(zone['nbuckets'])
+		if int(zone['tbucket']) > 0 and int(zone['nbuckets']) == 0:
+			print('WARNING! Zone {0}, Tokens are marked as being in a bucket however no buckets are in the zone'.format(z))
+	if tokens > max_tokens:
+		print('WARNING! Too many tokens in this match! ({0})'.format(tokens))
+	if buckets > max_buckets:
+		print('WARNING! Too many buckets in this match! ({0})'.format(buckets))
 
 def commands():
 	print("Possible commands: \n[S]core\n[M]odify\n[R]esults\n[H]elp\n[Q]uit")
