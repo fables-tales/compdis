@@ -52,33 +52,6 @@ def print_match(match):
 		print('\tBucket: {0}'.format(zone['tbucket']))
 		print('\tNo. Buckets: {0}'.format(zone['nbuckets']))
 
-def score():
-	print("Please enter match data (space separated) in the following order:")
-	print("Match, Zone, Robot Tokens, Zone Tokens, Bucket Tokens, Bucket count")
-	while True:
-		str = raw_input("Score: ")
-		if str is '':
-			return
-		try:
-			p = get_parts(str)
-			if not len(p) is 6:
-				print("Incorrect number of values entered. Please try again")
-				continue
-			for i in range(len(p)):
-				int(p[i])
-			if not int(p[1]) in range(4):
-				print('Please enter a valid zone number (0-3)')
-				continue
-			if actor.hexists('{0}.scores.match.{1}.{2}'.format(BASE,p[0],p[1]),'trobot') or actor.hexists('{0}.scores.match.{1}.{2}'.format(BASE,p[0],p[1]),'tzone') or actor.hexists('{0}.scores.match.{1}.{2}'.format(BASE,p[0],p[1]),'tbucket') or actor.hexists('{0}.scores.match.{1}.{2}'.format(BASE,p[0],p[1]),'nbuckets'):
-				print('Some details for this already exist, please check input or use modify mode')
-				continue
-			actor.hmset('{0}.scores.match.{1}.{2}'.format(BASE,p[0],p[1]),{'trobot':p[2],'tzone':p[3],'tbucket':p[4],'nbuckets':p[5]})
-			match = split_match(actor.lindex('{0}.matches'.format(BASE),int(p[0]) - 1))
-			actor.incr('{0}.scores.team.{1}'.format(BASE,match['teamz'+p[1]]),game_points(p))
-			print('Game Score ({0}): {1}'.format(match['teamz'+p[1]],game_points(p)))
-		except ValueError:
-			print("Sorry, incorrectly entered. Please try again")
-
 def results():
 	while True:
 		str = raw_input("Enter match number: ")
@@ -89,8 +62,27 @@ def results():
 		except ValueError:
 			print("Invalid match number, please try again")
 
-def modify():
-	print('Modify')
+def val_entry(mod,string,ori):
+	res = None
+	while res is None:
+		str = raw_input(string)
+		if str == '':
+			if mod is True:
+				res = ori
+			else:
+				res = 0
+		else:
+			try:
+				res = int(str)
+			except ValueError:
+				print('Invalid number, please try again')
+	return res
+
+def modify(mod):
+	if mod is True:
+		print('Modify')
+	else:
+		print('Score')
 	while True:
 		str = raw_input('Match: ')
 		if str == '':
@@ -99,72 +91,50 @@ def modify():
 			match = int(str)
 		except ValueError:
 			print('Invalid match number, please try again')
+		if mod is True:
+			print_match(match)
+			z = None
+			while z is None:
+				str = raw_input('Zone: ')
+				if str == '':
+					z = -1
+					continue
+				try:
+					z = int(str)
+					if not z in range(4):
+						print('Please enter a valid zone number (0-3)')
+						z = None
+				except ValueError:
+					print('Invalid zone number, please try again')
+			if z == -1:
+				continue
+			zone = actor.hgetall('{0}.scores.match.{1}.{2}'.format(BASE,match,z))
+			if zone == {}:
+				print('Match data not stored for Match {0}, Zone {1}\nPlease use score mode to enter new scores'.format(match,z))
+				continue
+			print('Please enter new values, leave blank for unchanged')
+			zone_entry(mod,match,z,zone)
+		else:
+			zone = {'trobot':0,'tzone':0,'tbucket':0,'nbuckets':0}
+			print('Please enter new values, defaults to 0 if left blank')
+			for z in range(4):
+				if(actor.exists('{0}.scores.match.{1}.{2}'.format(BASE,match,z))):
+					print('Details for zone {0} exist, please use modify to change'.format(z))
+					continue
+				print('Zone {0}:'.format(z))
+				zone_entry(mod,match,z,zone)
 		print_match(match)
-		z = None
-		trobot = None
-		tzone = None
-		tbucket = None
-		nbuckets = None
-		while z is None:
-			str = raw_input('Zone: ')
-			if str == '':
-				z = -1
-				continue
-			try:
-				z = int(str)
-				if not z in range(4):
-					print('Please enter a valid zone number (0-3)')
-					z = None
-			except ValueError:
-				print('Invalid zone number, please try again')
-		if z == -1:
-			continue
-		zone = actor.hgetall('{0}.scores.match.{1}.{2}'.format(BASE,match,z))
-		if zone == {}:
-			print('Match data not stored for Match {0}, Zone {1}\nPlease use score mode to enter new scores'.format(match,z))
-			continue
-		print('Please enter new values, leave blank for unchanged')
-		while trobot is None:
-			str = raw_input('Robot: ')
-			if str == '':
-				trobot = zone['trobot']
-				continue
-			try:
-				trobot = int(str)
-			except ValueError:
-				print('Invalid number, please try again')
-		while tzone is None:
-			str = raw_input('Zone: ')
-			if str == '':
-				tzone = zone['tzone']
-				continue
-			try:
-				tzone = int(str)
-			except ValueError:
-				print('Invalid number, please try again')
-		while tbucket is None:
-			str = raw_input('Bucket: ')
-			if str == '':
-				tbucket = zone['tbucket']
-				continue
-			try:
-				tbucket = int(str)
-			except ValueError:
-				print('Invalid number, please try again')
-		while nbuckets is None:
-			str = raw_input('No. Buckets: ')
-			if str == '':
-				nbuckets = zone['nbuckets']
-				continue
-			try:
-				nbuckets = int(str)
-			except ValueError:
-				print('Invalid number, please try again')
-		actor.hmset('{0}.scores.match.{1}.{2}'.format(BASE,match,z),{'trobot':trobot,'tzone':tzone,'tbucket':tbucket,'nbuckets':nbuckets})
-		mat = split_match(actor.lindex('{0}.matches'.format(BASE), match - 1))
+
+def zone_entry(mod,match,z,zone):
+	trobot = val_entry(mod,'\tRobot: ',zone['trobot'])
+	tzone = val_entry(mod,'\tZone: ',zone['tzone'])
+	tbucket = val_entry(mod,'\tBucket: ',zone['tbucket'])
+	nbuckets = val_entry(mod,'\tNo. Buckets: ',zone['nbuckets'])
+	actor.hmset('{0}.scores.match.{1}.{2}'.format(BASE,match,z),{'trobot':trobot,'tzone':tzone,'tbucket':tbucket,'nbuckets':nbuckets})
+	mat = split_match(actor.lindex('{0}.matches'.format(BASE), match - 1))
+	if mod is True:
 		actor.decr('{0}.scores.team.{1}'.format(BASE,mat['teamz{0}'.format(z)]),game_points([match,z,zone['trobot'],zone['tzone'],zone['tbucket'],zone['nbuckets']]))
-		actor.incr('{0}.scores.team.{1}'.format(BASE,mat['teamz{0}'.format(z)]),game_points([match,z,trobot,tzone,tbucket,nbuckets]))
-		print_match(match)
+	actor.incr('{0}.scores.team.{1}'.format(BASE,mat['teamz{0}'.format(z)]),game_points([match,z,trobot,tzone,tbucket,nbuckets]))
 
 def commands():
 	print("Possible commands: \n[S]core\n[M]odify\n[R]esults\n[H]elp\n[Q]uit")
@@ -174,9 +144,9 @@ while True:
 	str = raw_input("CMD: ")
 	str = str.capitalize()
 	if str == 'S' or str == 'Score':
-		score()
+		modify(False)
 	elif str == 'M' or str == 'Modify':
-		modify()
+		modify(True)
 	elif str == 'R' or str == 'Results':
 		results()
 	elif str == 'H' or str == 'Help':
