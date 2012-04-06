@@ -175,7 +175,6 @@ def match_rank(match,sub):
 	zord = sorted(zpoints, key=zpoints.get, reverse=True)
 	scored = 4
 	for z in range(len(zord)):
-		print('Scoring = {0}'.format(scored))
 		if sub is True:
 			actor.decr('{0}.scores.team.{1}'.format(BASE,mat['teamz{0}'.format(zord[z])]),scored)
 		else:
