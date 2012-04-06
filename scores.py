@@ -92,6 +92,7 @@ def modify(mod):
 			match = int(str)
 		except ValueError:
 			print('Invalid match number, please try again')
+			continue
 		if mod is True:
 			print_match(match)
 			z = None
