@@ -121,13 +121,15 @@ def modify(mod):
 		else:
 			zone = {'trobot':0,'tzone':0,'tbucket':0,'nbuckets':0}
 			print('Please enter new values, defaults to 0 if left blank')
+			tester = False
 			for z in range(4):
 				if(actor.exists('{0}.scores.match.{1}.{2}'.format(BASE,match,z))):
 					print('Details for zone {0} exist, please use modify to change'.format(z))
 					continue
 				print('Zone {0}:'.format(z))
-				zone_entry(mod,match,z,zone)
-			match_rank(match,False)
+				tester |= zone_entry(mod,match,z,zone)
+			if tester == True:
+				match_rank(match,False)
 		print_match(match)
 		check_match(match)
 
@@ -136,8 +138,11 @@ def zone_entry(mod,match,z,zone):
 	tzone = val_entry(mod,'\tZone: ',zone['tzone'])
 	tbucket = val_entry(mod,'\tBucket: ',zone['tbucket'])
 	nbuckets = val_entry(mod,'\tNo. Buckets: ',zone['nbuckets'])
+	if trobot == zone['trobot'] and tzone == zone['tzone'] and tbucket == zone['tbucket'] and nbuckets == zone['nbuckets']:
+		return False
 	actor.hmset('{0}.scores.match.{1}.{2}'.format(BASE,match,z),{'trobot':trobot,'tzone':tzone,'tbucket':tbucket,'nbuckets':nbuckets})
-
+	return True
+	
 def check_match(match):
 	max_tokens = 20
 	max_buckets = 4
