@@ -138,8 +138,9 @@ def zone_entry(mod,match,z,zone):
 	tzone = val_entry(mod,'\tZone: ',zone['tzone'])
 	tbucket = val_entry(mod,'\tBucket: ',zone['tbucket'])
 	nbuckets = val_entry(mod,'\tNo. Buckets: ',zone['nbuckets'])
-	if trobot == zone['trobot'] and tzone == zone['tzone'] and tbucket == zone['tbucket'] and nbuckets == zone['nbuckets']:
-		return False
+	if actor.exists('{0}.scores.match.{1}.{2}'.format(BASE,match,z)):
+		if trobot == zone['trobot'] and tzone == zone['tzone'] and tbucket == zone['tbucket'] and nbuckets == zone['nbuckets']:
+			return False
 	actor.hmset('{0}.scores.match.{1}.{2}'.format(BASE,match,z),{'trobot':trobot,'tzone':tzone,'tbucket':tbucket,'nbuckets':nbuckets,'game_points':game_points([match,z,trobot,tzone,tbucket,nbuckets])})
 	return True
 	
