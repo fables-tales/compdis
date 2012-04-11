@@ -1,0 +1,149 @@
+#!/usr/bin/env python
+import redis
+import os
+import json
+
+r = redis.Redis(host='localhost', port=6379, db=0)
+
+
+time_periods = [(0,3600),(7200,7200+3600)]
+NUMBER_TEAMS = 24
+TEAMS_PER_MATCH = 4
+match_length = 7
+
+
+def run_scheduler(number_teams, teams_per_match, number_matches):
+    os.system("cd match-scheduler && ./scheduler " + str(number_teams) + " " + str(number_matches) + " " + str(teams_per_match) + " False")
+    f = open("match-scheduler/matches.ms").read().strip().split("\n")
+    return f
+
+def initial_generate_matches():
+    total_matches = 0
+    for time_period in time_periods:
+        number_minutes = (time_period[1]-time_period[0]) / 60
+        number_matches = number_minutes / match_length
+        total_matches += number_matches
+    matches = run_scheduler(NUMBER_TEAMS, TEAMS_PER_MATCH, total_matches)
+    
+    ms = []
+    for time_period in time_periods:
+        number_minutes = (time_period[1]-time_period[0]) / 60
+        number_matches = number_minutes / match_length
+        match_start = time_period[0]
+        while (number_matches > 0): 
+            teams_string = matches.pop()
+            match_dict = {"time":match_start,
+                          "teams": teams_string.split(","),
+                          "delay": 0}
+            ms_string = match_to_ms(match_dict)
+            ms.append(ms_string)
+            number_matches -= 1
+            match_start += match_length*60
+    return ms
+
+def match_from_ms(ms):
+    return json.loads(ms)
+
+def match_to_ms(match):
+    return json.dumps(match)
+
+def match_in_time_period(start,end,match):
+    match_start = match["time"]
+    return match_start >= start and match_start <= end
+
+def match_fits_in_time_period(start,end,match):
+    match_start = match["time"] + match["delay"]
+    match_end   = match_start + match_length * 60 
+    return match_start >= start and match_end <= end
+
+def match_has_started(match, now):
+    return now >= match["time"] + match["delay"] 
+
+
+def match_was_in(start,end,match):
+    match_start = match["time"]
+    return match_start >= start and match_start <= end
+
+
+def persist_to_redis(matches):
+    length = r.llen("org.srobo.matches")
+    print "trimming from: " + str(length-len(matches))
+    ms_matches = []
+    for x in matches:
+       ms_matches.append(match_to_ms(x)) 
+    pipe = r.pipeline(transaction=True)
+    for i in range(length-len(matches), length):
+        ms_index = i-(length-len(matches))
+        pipe.lset("org.srobo.matches", i, ms_matches[ms_index])
+
+    pipe.execute()
+
+
+def delete_matches(kill_indices, offset):
+    pipe = r.pipeline(transaction=True)
+    print kill_indices
+    for index in kill_indices:
+        real_index = index + offset
+        value = r.lindex("org.srobo.matches", real_index)
+        pipe.lrem("org.srobo.matches", value, 1)
+        real_index -= 1
+    pipe.execute()
+
+
+def reschedule_within(start,end,time_now):
+    offset = int(r.get("org.srobo.time.offset"))
+    competition_start  = int(r.get("org.srobo.time.start"))
+    paused_time = offset-competition_start
+    matches = r.lrange("org.srobo.matches",0,-1)
+    after = []
+    for match in matches:
+        md = match_from_ms(match)
+        if md["time"]+md["delay"]+match_length * 60 >= time_now:
+            after.append(md)
+
+    for match in after:
+        if match_in_time_period(start,end,match): 
+            match["delay"] += paused_time - match["delay"]
+
+    for x in after:
+        print x
+    
+    persist_to_redis(after)
+    kill_indices = []
+    for i in range(0,len(after)):
+        match = after[i]
+        if match["time"] >= end:
+            pass
+        elif match["time"] + match["delay"] + match_length * 60 >= end:
+            kill_indices.append(i)
+    delete_matches(kill_indices, len(matches)-len(after))
+
+
+def main():
+    #check if we've got any matches and if we don't
+    #generate some
+    if r.llen("org.srobo.matches") == 0:
+        print "[Scheduler] no matches detected, generating some"
+        matches = initial_generate_matches()
+        for match in matches:
+            r.rpush("org.srobo.matches", match)
+    
+    ps = r.pubsub()
+    ps.psubscribe("org.srobo.time.offset")
+    lg = ps.listen()
+    for message in lg:
+        paused = r.get("org.srobo.time.paused") == "True"
+        print paused
+        if paused:
+            now = int(r.get("org.srobo.time.real"))
+            start = int(r.get("org.srobo.time.start"))
+            since_start = now-start
+            print "paused detected"
+            print since_start
+            for (start,end) in time_periods:
+                #check which time period we're in
+                if since_start >= start and since_start <= end:
+                    reschedule_within(start,end,since_start)
+
+if __name__ == "__main__":
+    main()
