@@ -2,11 +2,10 @@
 import redis
 
 match_length = 60*7 
-STATE_ENTER = 0x01
-STATE_BOOT  = 0x02
-STATE_LIVE  = 0x04
-STATE_SCORE = 0x08
-STATE_PRE_COMP = 0x10
+STATE_ENTER = "enter" 
+STATE_BOOT  = "boot" 
+STATE_LIVE  = "live" 
+STATE_SCORE = "scoring" 
 import time
 
 
