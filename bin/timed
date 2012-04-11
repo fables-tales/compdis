@@ -19,7 +19,7 @@ def interaction_thread():
 
     quit = False
     while not quit:
-        try:
+        if 1:
             x = raw_input("timed> ");
             if x.lower() == "start":
                 if started: print "already started the competition at:", start_time
@@ -55,8 +55,6 @@ def interaction_thread():
                 print "- resume: resume the timed clock"
                 print "- quit: quit timed"
                 print "- setstart: sets the start time of the competition, offset in minutes"
-        except:
-            break
         
 time_thread = None
 
@@ -78,14 +76,17 @@ def clock_thread():
     global quit
     last = time.time()
     while not quit:
-        r.set("org.srobo.time.real", time.time())
+        next_tick = int(last+1)
+        r.set("org.srobo.time.real", int(time.time()))
         paused = r.get("org.srobo.time.paused") == "True"
         if paused:
             pause_time += time.time() - last 
-        r.set("org.srobo.time.competition", time.time() - pause_time - start_time)
-        r.set("org.srobo.time.offset", pause_time + start_time)
+        r.set("org.srobo.time.competition", int(time.time() - pause_time - start_time))
+        r.set("org.srobo.time.offset", int(pause_time + start_time))
         last = time.time()
-        time.sleep(1)
+        print next_tick-time.time()
+        if (next_tick-time.time() >= 0):
+            time.sleep(next_tick-time.time())
 
 
 def main():
