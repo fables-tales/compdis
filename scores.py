@@ -140,7 +140,7 @@ def zone_entry(mod,match,z,zone):
 	nbuckets = val_entry(mod,'\tNo. Buckets: ',zone['nbuckets'])
 	if trobot == zone['trobot'] and tzone == zone['tzone'] and tbucket == zone['tbucket'] and nbuckets == zone['nbuckets']:
 		return False
-	actor.hmset('{0}.scores.match.{1}.{2}'.format(BASE,match,z),{'trobot':trobot,'tzone':tzone,'tbucket':tbucket,'nbuckets':nbuckets})
+	actor.hmset('{0}.scores.match.{1}.{2}'.format(BASE,match,z),{'trobot':trobot,'tzone':tzone,'tbucket':tbucket,'nbuckets':nbuckets,'game_points':game_points([match,z,trobot,tzone,tbucket,nbuckets])})
 	return True
 	
 def check_match(match):
@@ -179,6 +179,7 @@ def match_rank(match,sub):
 			actor.decr('{0}.scores.team.{1}'.format(BASE,mat['teamz{0}'.format(zord[z])]),scored)
 		else:
 			actor.incr('{0}.scores.team.{1}'.format(BASE,mat['teamz{0}'.format(zord[z])]),scored)
+			actor.hset('{0}.scores.match.{1}.{2}'.format(BASE,match,zord[z]),'league_points',scored)
 		if z != len(zord)-1:
 			if zpoints['{0}'.format(z)] != zpoints['{0}'.format(z+1)]:
 				scored = 4-z-1
