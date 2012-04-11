@@ -6,8 +6,8 @@ import threading
 r = redis.Redis(host='localhost', port=6379, db=0)
 started = False
 start_time =  int(r.get("org.srobo.time.start"))
-pause_time = 0
-paused = False
+pause_time = int(r.get("org.srobo.time.offset"))-start_time
+paused = r.get("org.srobo.time.paused") == "True"
 quit = False
 
 time_thread = None
