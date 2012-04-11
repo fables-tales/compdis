@@ -1,6 +1,6 @@
 #!/bin/env python
 
-import redis, shlex
+import redis, shlex, json
 
 HOST = "localhost"
 PORT = 6379
@@ -16,13 +16,12 @@ def get_parts(data):
 	return tuple(lexer)
 
 def split_match(data):
-	a = data.split(',')
-	res = {'mtime':a[0],
-	       'teamz0':a[1],
-	       'teamz1':a[2],
-	       'teamz2':a[3],
-	       'teamz3':a[4],
-	       'matNo':a[5]}
+	a = json.loads(data)
+	res = {'mtime':a["time"],
+	       'teamz0':a["teams"][0],
+	       'teamz1':a["teams"][1],
+	       'teamz2':a["teams"][2],
+	       'teamz3':a["teams"][3]}
 	return res
 
 def game_points(score):
@@ -37,7 +36,7 @@ def game_points(score):
 def print_match(match):
 	print('Match {0}'.format(match))
 	try:
-		mat = split_match(actor.lindex('{0}.matches'.format(BASE), match - 1))
+		mat = split_match(actor.lindex('{0}.matches'.format(BASE), match))
 	except AttributeError:
 		print('There is no expected match {0}'.format(match))
 		return
@@ -165,7 +164,7 @@ def check_match(match):
 		print('WARNING! Too many buckets in this match! ({0})'.format(buckets))
 
 def match_rank(match,sub):
-	mat = split_match(actor.lindex('{0}.matches'.format(BASE), match - 1))
+	mat = split_match(actor.lindex('{0}.matches'.format(BASE), match))
 	zpoints = dict()
 	for z in range(4):
 		zone = actor.hgetall('{0}.scores.match.{1}.{2}'.format(BASE,match,z))
