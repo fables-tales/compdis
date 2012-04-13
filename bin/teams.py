@@ -25,8 +25,10 @@ if __name__ == "__main__":
     teams.append({"real-name":"Peter Symonds", "tla":"PSC2","number":17})
     teams.append({"real-name":"Queen Elizabeth's Hospital School", "tla":"QEH", "number":18})
     teams.append({"real-name":"Queen Mary's College", "tla":"QMC", "number":19})
+    teams.append({"real-name":"Red maids bristol", "tla":"RMS", "number":20})
     teams.append({"real-name":"Southend School", "tla":"SEN", "number":21})
     teams.append({"real-name":"Southend School", "tla":"SEN2", "number":22})
+    teams.append({"real-name":"St annes","tla":"STA","number":23})
     teams.append({"real-name":"Tauntons College", "tla":"TTN", "number":24})
 
 
@@ -40,7 +42,7 @@ if __name__ == "__main__":
         tla = sys.argv[2]
         description = sys.argv[3]
         found = False
-        for i in xrange(0,24):
+        for i in xrange(0,25):
             check_tla = r.get("org.srobo.teams." + str(i) + ".tla")
             if check_tla != None and check_tla == tla:
                 found = True
