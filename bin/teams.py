@@ -1,0 +1,35 @@
+#!/usr/bin/env python
+import redis
+
+r = redis.Redis(host='localhost', port=6379, db=0)
+
+if __name__ == "__main__":
+    teams = []
+    teams.append({"real-name":"Lycee Argouges", "tla":"ARG", "number":1})
+    teams.append({"real-name":"Bishop Wordsworth School", "tla":"BWS", "number":2})
+    teams.append({"real-name":"Bishop Wordsworth School", "tla":"BWS2", "number":3})
+    teams.append({"real-name":"Bristol Grammar School", "tla":"BGR", "number":4})
+    teams.append({"real-name":"Brokenhurst College", "tla":"BRK", "number":5})
+    teams.append({"real-name":"Bournemouth School for Girls", "tla":"BSG", "number":6})
+    teams.append({"real-name":"Clifton High School", "tla":"CLF", "number":7})
+    teams.append({"real-name":"Clifton High School", "tla":"CLF2", "number":8})
+    teams.append({"real-name":"Lycee Emmanuel Mounier", "tla":"EMM", "number":9})
+    teams.append({"real-name":"Gresham's", "tla":"GRS", "number":10})
+    teams.append({"real-name":"Grey Matter Robotics", "tla":"GMR", "number":11})
+    teams.append({"real-name":"Hills Road Sixth Form College", "tla":"HRS","number":12})
+    teams.append({"real-name":"Hazelwick comprehensive School", "tla":"HZW","number":13})
+    teams.append({"real-name":"Mirfield Free Grammar", "tla":"MFG", "number":14})
+    teams.append({"real-name":"Munich", "tla":"MUC", "number":15})
+    teams.append({"real-name":"Peter Symonds", "tla":"PSC","number":16})
+    teams.append({"real-name":"Peter Symonds", "tla":"PSC2","number":17})
+    teams.append({"real-name":"Queen Elizabeth's Hospital School", "tla":"QEH", "number":18})
+    teams.append({"real-name":"Queen Mary's College", "tla":"QMC", "number":19})
+    teams.append({"real-name":"Southend School", "tla":"SEN", "number":21})
+    teams.append({"real-name":"Southend School", "tla":"SEN2", "number":22})
+    teams.append({"real-name":"Tauntons College", "tla":"TTN", "number":24})
+
+    for x in teams:
+        r.set("org.srobo.teams." + str(x["number"]) + ".tla", x["tla"])
+        r.set("org.srobo.teams." + str(x["number"]) + ".org_name", x["real-name"])
+   
+    print "done setting teams"
