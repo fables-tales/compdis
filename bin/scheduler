@@ -17,6 +17,13 @@ def run_scheduler(number_teams, teams_per_match, number_matches):
     f = open("match-scheduler/matches.ms").read().strip().split("\n")
     return f
 
+
+def teams_to_tlas(teams):
+    tlas = []
+    for team in teams:
+        tlas.append(r.get("org.srobo.teams." + str(team) + ".tla"))
+    return tlas
+
 def initial_generate_matches():
     total_matches = 0
     for time_period in time_periods:
@@ -33,7 +40,7 @@ def initial_generate_matches():
         while (number_matches > 0): 
             teams_string = matches.pop()
             match_dict = {"time":match_start,
-                          "teams": teams_string.split(","),
+                          "teams": teams_to_tlas(teams_string.split(",")),
                           "delay": 0}
             ms_string = match_to_ms(match_dict)
             ms.append(ms_string)
