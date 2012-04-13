@@ -1,0 +1,96 @@
+#!/usr/bin/env python
+import redis
+import datetime
+import time
+
+r = redis.Redis(host='localhost', port=6379, db=0)
+
+if __name__ == "__main__":
+    dt = datetime.datetime.strptime('Sat 14 Apr 2012 09:00:00 AM BST','%a %d %b %Y %H:%M:%S %p %Z')
+    competition_9am = time.mktime(dt.timetuple())
+    competition_10am = competition_9am+3600
+    dt = datetime.datetime.strptime('Sun 15 Apr 2012 09:00:00 AM BST','%a %d %b %Y %H:%M:%S %p %Z')
+    competition_day_2_10am = time.mktime(dt.timetuple()) + 3600 
+    events = []
+    events.append({"name":"Safety Breifing",
+                   "state":"briefing",
+                   "start":competition_10am,
+                   "end":competition_10am+300
+                  })
+    events.append({"name":"Tinkering time",
+                   "state":"tinker",
+                   "start":competition_10am+300,
+                   "end":competition_10am+3600*2+45*60
+                  })
+    events.append({"name":"Lunch",
+                   "state":"lunch",
+                   "start":competition_10am+3600*2+45*60,
+                   "end":competition_10am+3600*3+30*60
+                  })
+    events.append({"name":"Introduction to proceedings",
+                   "state":"breifing",
+                   "start":competition_10am+3600*3+30*60,
+                   "end": competition_10am+3600*3+45*60
+                  })
+    events.append({"name":"First robot inspections",
+                   "state":"inspection",
+                   "start":competition_10am+3600*3+45*60,
+                   "end":competition_10am+3600*4
+                  })
+    events.append({"name":"League matches",
+                   "state":"league",
+                   "start":competition_10am+3600*4,
+                   "end":competition_10am+3600*7
+                  }) 
+    events.append({"name":"Safety Breifing",
+                   "state":"briefing",
+                   "start":competition_day_2_10am,
+                   "end":competition_day_2_10am+300
+                  })
+    events.append({"name":"League matches",
+                   "state":"league",
+                   "start":competition_day_2_10am+300,
+                   "end":competition_day_2_10am+3600*2+15*60
+                  }) 
+    events.append({"name":"Group photo",
+                   "state":"breifing",
+                   "start":competition_day_2_10am+3600*2+15*60,
+                   "end":competition_day_2_10am+3600*2+30*60
+                 })
+    events.append({"name":"Lunch",
+                   "state":"lunch",
+                   "start":competition_day_2_10am+3600*2+30*60,
+                   "end":competition_day_2_10am+3600*3+15*60
+                  })
+    events.append({"name":"League matches",
+                   "state":"league",
+                   "start":competition_day_2_10am+3600*3,
+                   "end":competition_day_2_10am+3600*5
+                 })
+    events.append({"name":"Finals",
+                   "state":"final",
+                   "start":competition_day_2_10am+3600*5,
+                   "end":competition_day_2_10am+3600*6
+                 })
+    events.append({"name":"Prize giving ceremony",
+                   "state":"prizes",
+                   "start":competition_day_2_10am+3600*6,
+                   "end":competition_day_2_10am+3600*6+30*60
+                 })
+    events.append({"name":"Kit return",
+                   "state":"kit-return",
+                   "start":competition_day_2_10am+3600*6+30*60,
+                   "end":competition_day_2_10am+3600*7
+                 })
+
+    keys = r.keys("org.srobo.schedule*")
+    for key in keys:
+        r.delete(key)
+
+    for event in events:
+        ev_key = event["state"] + str(int(event["start"]))
+        r.set("org.srobo.schedule." + ev_key + ".name", event["name"])
+        r.set("org.srobo.schedule." + ev_key + ".start", int(event["start"]))
+        r.set("org.srobo.schedule." + ev_key + ".end", int(event["end"]))
+        r.set("org.srobo.schedule." + ev_key + ".state", event["state"])
+        r.zadd("org.srobo.schedule", ev_key, event["start"]) 
