@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import sys
 import redis
 
 r = redis.Redis(host='localhost', port=6379, db=0)
@@ -28,8 +29,25 @@ if __name__ == "__main__":
     teams.append({"real-name":"Southend School", "tla":"SEN2", "number":22})
     teams.append({"real-name":"Tauntons College", "tla":"TTN", "number":24})
 
-    for x in teams:
-        r.set("org.srobo.teams." + str(x["number"]) + ".tla", x["tla"])
-        r.set("org.srobo.teams." + str(x["number"]) + ".org_name", x["real-name"])
-   
-    print "done setting teams"
+
+    if len(sys.argv) == 2 and sys.argv[1] == "init":
+        for x in teams:
+            r.set("org.srobo.teams." + str(x["number"]) + ".tla", x["tla"])
+            r.set("org.srobo.teams." + str(x["number"]) + ".org_name", x["real-name"])
+            r.set("org.srobo.score.teams." + str(x["tla"]), 0)
+        
+    if len(sys.argv) == 4 and sys.argv[1] == "robotname":
+        tla = sys.argv[2]
+        description = sys.argv[3]
+        found = False
+        for i in xrange(0,24):
+            check_tla = r.get("org.srobo.teams." + str(i) + ".tla")
+            if check_tla != None and check_tla == tla:
+                found = True
+                print "found",tla,"updating their robot name"
+                r.set("org.srobo.teams." + str(i) + ".robot_name", description)
+
+        if not found:
+            print "couldn't find team"
+
+
