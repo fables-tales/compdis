@@ -21,7 +21,9 @@ def run_scheduler(number_teams, teams_per_match, number_matches):
 def teams_to_tlas(teams):
     tlas = []
     for team in teams:
-        tlas.append(r.get("org.srobo.teams." + str(team) + ".tla"))
+        team = int(team) + 1
+        x = r.get("org.srobo.teams." + str(team) + ".tla")
+        tlas.append(x)
     return tlas
 
 def initial_generate_matches():
