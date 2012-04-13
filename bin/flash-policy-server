@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+while ((1))
+do
+    cat policy.xml | nc -4l 843
+    echo Served!
+done
+
+

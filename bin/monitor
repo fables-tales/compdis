@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/usr/bin/env python
 
 import socket, re, shlex, operator
 
@@ -15,19 +15,12 @@ def pub_all():
 	s.sendall('KEYS *\r\n')
 	data = s.recv(1024)
 	parts = get_parts(data)
-<<<<<<< HEAD
-	print parts
-	keys = ()
-	for i in range(len(parts)-3):
-		if not ('*' in parts[i] or '$' in parts[i] or parts[i] is 'KEYS'):
-			keys = (keys, parts[i])
-	print keys
-=======
 	keys = []
+
 	for i in range(len(parts)-3):
 		if not ('*' in parts[i] or '$' in parts[i] or parts[i] is 'KEYS'):
 			keys.append(parts[i])
->>>>>>> e2d0dc6e5888aee894d79445940f7be79763a684
+
 	normal(len(keys), keys)
 
 def normal(cmd, args):

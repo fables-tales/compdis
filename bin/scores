@@ -187,19 +187,21 @@ def match_rank(match,sub):
 def commands():
 	print("Possible commands: \n[S]core\n[M]odify\n[R]esults\n[H]elp\n[Q]uit")
 
-commands()
-while True:
-	str = raw_input("CMD: ")
-	str = str.capitalize()
-	if str == 'S' or str == 'Score':
-		modify(False)
-	elif str == 'M' or str == 'Modify':
-		modify(True)
-	elif str == 'R' or str == 'Results':
-		results()
-	elif str == 'H' or str == 'Help':
-		commands()
-	elif str == 'Q' or str == 'Quit':
-		quit()
-	else:
-		print('Erm... What? Type \'H\' for a list of commands I understand')
+
+if __name__ == "__main__":
+    commands()
+    while True:
+        str = raw_input("CMD: ")
+        str = str.capitalize()
+        if str == 'S' or str == 'Score':
+            modify(False)
+        elif str == 'M' or str == 'Modify':
+            modify(True)
+        elif str == 'R' or str == 'Results':
+            results()
+        elif str == 'H' or str == 'Help':
+            commands()
+        elif str == 'Q' or str == 'Quit':
+            quit()
+        else:
+            print('Erm... What? Type \'H\' for a list of commands I understand')
