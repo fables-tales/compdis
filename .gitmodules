@@ -1,3 +1,6 @@
 [submodule "webdis"]
 	path = webdis
 	url = git://github.com/nicolasff/webdis.git
+[submodule "match-scheduler"]
+	path = match-scheduler
+	url = git://srobo.org/match-scheduler.git

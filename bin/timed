@@ -1,0 +1,38 @@
+#!/usr/bin/env python
+import redis
+import time
+import threading
+
+r = redis.Redis(host='localhost', port=6379, db=0)
+started = False
+start_time =  int(r.get("org.srobo.time.start"))
+pause_time = int(r.get("org.srobo.time.offset"))-start_time
+paused = r.get("org.srobo.time.paused") == "True"
+quit = False
+
+time_thread = None
+
+def clock_thread():
+    global pause_time
+    global start_time
+    global quit
+    last = time.time()
+    while not quit:
+        next_tick = int(last+1)
+        r.set("org.srobo.time.real", int(time.time()))
+        paused = r.get("org.srobo.time.paused") == "True"
+        if paused:
+            pause_time += time.time() - last 
+        r.set("org.srobo.time.competition", int(time.time() - pause_time - start_time))
+        r.set("org.srobo.time.offset", int(pause_time + start_time))
+        last = time.time()
+        if (next_tick-time.time() >= 0):
+            time.sleep(next_tick-time.time())
+
+
+def main():
+    clock_thread()
+
+if __name__ == "__main__":
+    main()
+    quit = True

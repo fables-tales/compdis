@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/usr/bin/env python
 
 import socket, re, shlex, operator
 
@@ -15,12 +15,12 @@ def pub_all():
 	s.sendall('KEYS *\r\n')
 	data = s.recv(1024)
 	parts = get_parts(data)
-	print parts
-	keys = ()
+	keys = []
+
 	for i in range(len(parts)-3):
 		if not ('*' in parts[i] or '$' in parts[i] or parts[i] is 'KEYS'):
-			keys = (keys, parts[i])
-	print keys
+			keys.append(parts[i])
+
 	normal(len(keys), keys)
 
 def normal(cmd, args):
@@ -38,16 +38,25 @@ def special_flush(cmd, args):
 	pass
 
 def special_mset(cmd, args):
-	pass
+	keys = []
+	for i in range(len(args)):
+		if (i % 2) is 0:
+			keys.append(args[i])
+	normal(len(keys), keys)
 
 def special_select(cmd, args):
 	pub_all()
 	pass
 
 def special_shutdown(cmd, args):
+	print 'ALERT: Redis shutdown!'
 	pass
 
 def special_slave(cmd, args):
+	if not (args[0].upper() == 'NO' and args[1].upper() == 'ONE'):
+		print 'WARNING: Redis slave set'
+	else:
+		print 'Server is master'
 	pub_all()
 	pass
 
@@ -114,14 +123,18 @@ red_mod_coms = {'APPEND':(1,normal),
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((HOST,PORT))
 
+buff = ""
+
 s.sendall('MONITOR\r\n')
 while True:
-	data = s.recv(1024)
-	print 'Rec:', repr(data)
-	parts = get_parts(data)
-	print parts
-	if parts is None:
-		continue
-	if parts[1].upper() in red_mod_coms:
-		red_mod_coms[parts[1].upper()][1](red_mod_coms[parts[1].upper()][0],parts[2:])
+	buff += s.recv(16384)
+	while buff.find("\r\n") > -1:
+		data = buff[0:buff.find("\r\n") + 2]
+		buff = buff[len(data):]
+		print 'Rec:', repr(data)
+		parts = get_parts(data)
+		if parts is None or len(parts) < 2:
+			continue
+		if parts[1].upper() in red_mod_coms:
+			red_mod_coms[parts[1].upper()][1](red_mod_coms[parts[1].upper()][0],parts[2:])
 

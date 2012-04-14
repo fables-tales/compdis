@@ -1,0 +1,207 @@
+#!/bin/env python
+
+import redis, shlex, json
+
+HOST = "localhost"
+PORT = 6379
+DB = 0
+
+BASE = 'org.srobo'
+
+actor = redis.Redis(host=HOST, port=PORT, db=DB)
+
+def get_parts(data):
+	lexer = shlex.shlex(data, posix=True)
+	lexer.whitespace_split = True
+	return tuple(lexer)
+
+def split_match(data):
+	a = json.loads(data)
+	res = {'mtime':a["time"],
+	       'teamz0':a["teams"][0],
+	       'teamz1':a["teams"][1],
+	       'teamz2':a["teams"][2],
+	       'teamz3':a["teams"][3]}
+	return res
+
+def game_points(score):
+	total = 0
+	total += int(score[2])
+	total += 2*int(score[3])
+	total += 5*int(score[4])
+	if int(score[5]) > 1:
+		total *= int(score[5])
+	return total
+
+def print_match(match):
+	print('Match {0}'.format(match))
+	try:
+		mat = split_match(actor.lindex('{0}.matches'.format(BASE), match))
+	except AttributeError:
+		print('There is no expected match {0}'.format(match))
+		return
+	for i in range(4):
+		zone = actor.hgetall('{0}.scores.match.{1}.{2}'.format(BASE,match,i))
+		if zone == {}:
+			print('Match data not stored for Match {0}, Zone {1}'.format(match,i))
+			continue
+		print('Zone {0} ({1}): {2}'.format(i,mat['teamz{0}'.format(i)],game_points([0,0,zone['trobot'],zone['tzone'],zone['tbucket'],zone['nbuckets']])))
+		print('\tRobot:  {0}'.format(zone['trobot']))
+		print('\tZone:   {0}'.format(zone['tzone']))
+		print('\tBucket: {0}'.format(zone['tbucket']))
+		print('\tNo. Buckets: {0}'.format(zone['nbuckets']))
+
+def results():
+	while True:
+		str = raw_input("Enter match number: ")
+		if str is '':
+			return
+		try:
+			print_match(int(str))
+			check_match(int(str))
+		except ValueError:
+			print("Invalid match number, please try again")
+
+def val_entry(mod,string,ori):
+	res = None
+	while res is None:
+		str = raw_input(string)
+		if str == '':
+			if mod is True:
+				res = ori
+			else:
+				res = 0
+		else:
+			try:
+				res = int(str)
+			except ValueError:
+				print('Invalid number, please try again')
+	return res
+
+def modify(mod):
+	if mod is True:
+		print('Modify')
+	else:
+		print('Score')
+	while True:
+		str = raw_input('Match: ')
+		if str == '':
+			return
+		try:
+			match = int(str)
+		except ValueError:
+			print('Invalid match number, please try again')
+			continue
+		if mod is True:
+			print_match(match)
+			z = None
+			while z is None:
+				str = raw_input('Zone: ')
+				if str == '':
+					z = -1
+					continue
+				try:
+					z = int(str)
+					if not z in range(4):
+						print('Please enter a valid zone number (0-3)')
+						z = None
+				except ValueError:
+					print('Invalid zone number, please try again')
+			if z == -1:
+				continue
+			zone = actor.hgetall('{0}.scores.match.{1}.{2}'.format(BASE,match,z))
+			if zone == {}:
+				print('Match data not stored for Match {0}, Zone {1}\nPlease use score mode to enter new scores'.format(match,z))
+				continue
+			print('Please enter new values, leave blank for unchanged')
+			match_rank(match,True)
+			zone_entry(mod,match,z,zone)
+			match_rank(match,False)
+		else:
+			zone = {'trobot':0,'tzone':0,'tbucket':0,'nbuckets':0}
+			print('Please enter new values, defaults to 0 if left blank')
+			tester = False
+			for z in range(4):
+				if(actor.exists('{0}.scores.match.{1}.{2}'.format(BASE,match,z))):
+					print('Details for zone {0} exist, please use modify to change'.format(z))
+					continue
+				print('Zone {0}:'.format(z))
+				tester |= zone_entry(mod,match,z,zone)
+			if tester == True:
+				match_rank(match,False)
+		print_match(match)
+		check_match(match)
+
+def zone_entry(mod,match,z,zone):
+	trobot = val_entry(mod,'\tRobot: ',zone['trobot'])
+	tzone = val_entry(mod,'\tZone: ',zone['tzone'])
+	tbucket = val_entry(mod,'\tBucket: ',zone['tbucket'])
+	nbuckets = val_entry(mod,'\tNo. Buckets: ',zone['nbuckets'])
+	if actor.exists('{0}.scores.match.{1}.{2}'.format(BASE,match,z)):
+		if trobot == zone['trobot'] and tzone == zone['tzone'] and tbucket == zone['tbucket'] and nbuckets == zone['nbuckets']:
+			return False
+	actor.hmset('{0}.scores.match.{1}.{2}'.format(BASE,match,z),{'trobot':trobot,'tzone':tzone,'tbucket':tbucket,'nbuckets':nbuckets,'game_points':game_points([match,z,trobot,tzone,tbucket,nbuckets])})
+	return True
+	
+def check_match(match):
+	max_tokens = 20
+	max_buckets = 4
+	tokens = 0
+	buckets = 0
+	for z in range(4):
+		zone = actor.hgetall('{0}.scores.match.{1}.{2}'.format(BASE,match,z))
+		if zone == {}:
+			continue
+		tokens += int(zone['trobot'])
+		tokens += int(zone['tzone'])
+		tokens += int(zone['tbucket'])
+		buckets += int(zone['nbuckets'])
+		if int(zone['tbucket']) > 0 and int(zone['nbuckets']) == 0:
+			print('WARNING! Zone {0}, Tokens are marked as being in a bucket however no buckets are in the zone'.format(z))
+	if tokens > max_tokens:
+		print('WARNING! Too many tokens in this match! ({0})'.format(tokens))
+	if buckets > max_buckets:
+		print('WARNING! Too many buckets in this match! ({0})'.format(buckets))
+
+def match_rank(match,sub):
+	mat = split_match(actor.lindex('{0}.matches'.format(BASE), match))
+	zpoints = dict()
+	for z in range(4):
+		zone = actor.hgetall('{0}.scores.match.{1}.{2}'.format(BASE,match,z))
+		if zone != {}:
+			zpoints['{0}'.format(z)] = game_points([match,z,zone['trobot'],zone['tzone'],zone['tbucket'],zone['nbuckets']])
+		else:
+			zpoints['{0}'.format(z)] = -1
+	zord = sorted(zpoints, key=zpoints.get, reverse=True)
+	scored = 4
+	for z in range(len(zord)):
+		if sub is True:
+			actor.decr('{0}.scores.team.{1}'.format(BASE,mat['teamz{0}'.format(zord[z])]),scored)
+		else:
+			actor.incr('{0}.scores.team.{1}'.format(BASE,mat['teamz{0}'.format(zord[z])]),scored)
+			actor.hset('{0}.scores.match.{1}.{2}'.format(BASE,match,zord[z]),'league_points',scored)
+		if z != len(zord)-1:
+			if zpoints['{0}'.format(z)] != zpoints['{0}'.format(z+1)]:
+				scored = 4-z-1
+
+def commands():
+	print("Possible commands: \n[S]core\n[M]odify\n[R]esults\n[H]elp\n[Q]uit")
+
+
+if __name__ == "__main__":
+    commands()
+    while True:
+        str = raw_input("CMD: ")
+        str = str.capitalize()
+        if str == 'S' or str == 'Score':
+            modify(False)
+        elif str == 'M' or str == 'Modify':
+            modify(True)
+        elif str == 'R' or str == 'Results':
+            results()
+        elif str == 'H' or str == 'Help':
+            commands()
+        elif str == 'Q' or str == 'Quit':
+            quit()
+        else:
+            print('Erm... What? Type \'H\' for a list of commands I understand')
