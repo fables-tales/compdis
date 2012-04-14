@@ -133,7 +133,7 @@ while True:
 		buff = buff[len(data):]
 		print 'Rec:', repr(data)
 		parts = get_parts(data)
-		if parts is None:
+		if parts is None or len(parts) < 2:
 			continue
 		if parts[1].upper() in red_mod_coms:
 			red_mod_coms[parts[1].upper()][1](red_mod_coms[parts[1].upper()][0],parts[2:])
