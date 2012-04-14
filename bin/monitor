@@ -123,14 +123,18 @@ red_mod_coms = {'APPEND':(1,normal),
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((HOST,PORT))
 
+buff = ""
+
 s.sendall('MONITOR\r\n')
 while True:
-	data = s.recv(16384)
-	print 'Rec:', repr(data)
-	parts = get_parts(data)
-	print parts
-	if parts is None:
-		continue
-	if parts[1].upper() in red_mod_coms:
-		red_mod_coms[parts[1].upper()][1](red_mod_coms[parts[1].upper()][0],parts[2:])
+	buff += s.recv(16384)
+	while buff.find("\r\n") > -1:
+		data = buff[0:buff.find("\r\n") + 2]
+		buff = buff[len(data):]
+		print 'Rec:', repr(data)
+		parts = get_parts(data)
+		if parts is None:
+			continue
+		if parts[1].upper() in red_mod_coms:
+			red_mod_coms[parts[1].upper()][1](red_mod_coms[parts[1].upper()][0],parts[2:])
 
